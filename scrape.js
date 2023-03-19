@@ -1,7 +1,14 @@
-const url = 'https://www.cyclop.in/collections/bike-lights?limit=100&pf_t_brightness_in_lumens=1000&pf_t_brightness_in_lumens=1100&pf_t_brightness_in_lumens=1600&pf_t_brightness_in_lumens=800&pf_t_type_of_product=Front+Lights&sort=price-descending';
+// const url = 'https://www.cyclop.in/collections/bike-lights?limit=100&pf_t_brightness_in_lumens=1000&pf_t_brightness_in_lumens=1100&pf_t_brightness_in_lumens=1600&pf_t_brightness_in_lumens=800&pf_t_type_of_product=Front+Lights&sort=price-descending';
 
-const fs = require('fs');
 const puppeteer = require('puppeteer');
+const fs = require('fs');
+
+const url = process.argv[2];
+console.log(url);
+if (!url) {
+  console.error('Please provide a URL');
+  process.exit(1);
+}
 
 async function scrapeWebsite(url) {
   const browser = await puppeteer.launch();
