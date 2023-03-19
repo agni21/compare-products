@@ -18,24 +18,38 @@ async function scrapeWebsite(url) {
     // Navigate to the product page to extract more details
     const productPage = await browser.newPage();
     await productPage.goto(link);
-    const description = await productPage.$eval('.product-block:not(.product-block--price) > .rte', (el) => el.innerText.trim());const ratingEl = await productPage.$('.jdgm-prev-badge');
+    const description = await productPage.$eval('.product-block:not(.product-block--price) > .rte', (el) => el.innerText.trim());
+
+    // Extract the specifications from the product description
+    const lumensMatch = description.match(/([\d,]+)\s*(lumens|lm)/i);
+    const batteryMatch = description.match(/([\d,]+)\s*(mah)/i);
+    const weightMatch = description.match(/([\d,]+)\s*(grams|g)/i);
+    const chargingMatch = /type-c/i.test(description);
+
+    const specifications = {};
+    if (lumensMatch) {
+      specifications.lumens = lumensMatch[1].replace(/,/g, '');
+      specifications.lumensRef = lumensMatch[0];
+    }
+    if (batteryMatch) {
+      specifications.batteryCapacity = batteryMatch[1].replace(/,/g, '');
+      specifications.batteryCapacityRef = batteryMatch[0];
+    }
+    if (weightMatch) {
+      specifications.weight = weightMatch[1].replace(/,/g, '');
+      specifications.weightRef = weightMatch[0];
+    }
+    if (chargingMatch) {
+      specifications.charging = 'Type-C';
+      specifications.chargingRef = 'Type-C';
+    }
+
+    const ratingEl = await productPage.$('.jdgm-prev-badge');
     const rating = ratingEl ? await ratingEl.evaluate((el) => ({
       average: el.getAttribute('data-average-rating').trim(),
       count: el.getAttribute('data-number-of-reviews').trim(),
     })) : null;
 
-    // Extract specifications from the product description
-    const lumensMatch = description.match(/([\d,]+)\s*(lumens|lm)/i);
-    const batteryMatch = description.match(/([\d,]+)\s*(mah)/i);
-    const weightMatch = description.match(/([\d,]+)\s*(grams|g)/i);
-    const chargingMatch = /type-c/i.test(description);
-    const specifications = {
-      output: lumensMatch ? lumensMatch[1] : undefined,
-      charging: chargingMatch ? 'Type-C' : undefined,
-      batteryCapacity: batteryMatch ? batteryMatch[1] : undefined,
-      weight: weightMatch ? weightMatch[1] : undefined,
-    };
-    console.log(specifications);
     // Close the product page and return the data
     await productPage.close();
     return { link, title, price, description, specifications, rating };
@@ -46,14 +60,14 @@ async function scrapeWebsite(url) {
 }
 
 scrapeWebsite(url).then((data) => {
-  const timestamp = new Date().toISOString().replace(/:/g, '-');
-  const filename = `results/out_${timestamp}.json`;
-  const json = JSON.stringify(data, null, 2);
-  fs.writeFile(filename, json, (err) => {
+  const timestamp = Date.now();
+  const fileName = `out_${timestamp}.json`;
+  const filePath = `./results/${fileName}`;
+  fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
     if (err) {
-      console.error(`Error writing to file: ${err}`);
-    } else {
-      console.log(`Data written to ${filename}`);
+      console.error(err);
+      return;
     }
+    console.log(`Data saved to ${filePath}`);
   });
 });
