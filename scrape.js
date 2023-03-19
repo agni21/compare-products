@@ -18,13 +18,25 @@ async function scrapeWebsite(url) {
     // Navigate to the product page to extract more details
     const productPage = await browser.newPage();
     await productPage.goto(link);
-    const description = await productPage.$eval('.product-block:not(.product-block--price) > .rte', (el) => el.innerText.trim());
-    const ratingValue = await productPage.$eval('.jdgm-prev-badge', (el) => el.getAttribute('data-average-rating').trim());
-    const ratingCount = await productPage.$eval('.jdgm-prev-badge', (el) => el.getAttribute('data-number-of-reviews').trim());
+    const description = await productPage.$eval('.product-block:not(.product-block--price) > .rte', (el) => el.innerText.trim());const ratingEl = await productPage.$('.jdgm-prev-badge');
+    const rating = ratingEl ? await ratingEl.evaluate((el) => ({
+      average: el.getAttribute('data-average-rating').trim(),
+      count: el.getAttribute('data-number-of-reviews').trim(),
+    })) : null;
 
+    // Extract specifications from the product description
+    const lumensMatch = description.match(/(\d+)\s*lumens?/i);
+    const batteryMatch = description.match(/(\d+)\s*mah/i);
+    const weightMatch = description.match(/(\d+)\s*(g|grams)/i);
+    const specifications = {
+      output: lumensMatch ? lumensMatch[1] : null,
+      batteryCapacity: batteryMatch ? batteryMatch[1] : null,
+      weight: weightMatch ? weightMatch[1] : null,
+    };
+    console.log(specifications);
     // Close the product page and return the data
     await productPage.close();
-    return { link, title, price, description, rating: { value: ratingValue, count: ratingCount } };
+    return { link, title, price, description, specifications, rating };
   }));
 
   await browser.close();
