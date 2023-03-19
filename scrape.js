@@ -36,19 +36,19 @@ async function scrapeWebsite(url) {
     const specifications = {};
     if (lumensMatch) {
       specifications.lumens = lumensMatch[1].replace(/,/g, '');
-      specifications.lumensRef = lumensMatch[0];
     }
     if (batteryMatch) {
       specifications.batteryCapacity = batteryMatch[1].replace(/,/g, '');
-      specifications.batteryCapacityRef = batteryMatch[0];
+      const sr1 = batteryMatch.input.substring(batteryMatch.index - 100, batteryMatch.index).trim().replace(/\n/g, '.').split('.').slice(-1)[0]
+      const sr2 = batteryMatch.input.substring(batteryMatch.index, batteryMatch.index + 100).trim().replace(/\n/g, '.').split('.')[0]
+      specifications.batteryRef = sr1 + ' ' + sr2
+      console.log(specifications.batteryRef);
     }
     if (weightMatch) {
       specifications.weight = weightMatch[1].replace(/,/g, '');
-      specifications.weightRef = weightMatch[0];
     }
     if (chargingMatch) {
       specifications.charging = 'Type-C';
-      specifications.chargingRef = 'Type-C';
     }
 
     const ratingEl = await productPage.$('.jdgm-prev-badge');
