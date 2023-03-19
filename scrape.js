@@ -41,8 +41,7 @@ async function scrapeWebsite(url) {
       specifications.batteryCapacity = batteryMatch[1].replace(/,/g, '');
       const sr1 = batteryMatch.input.substring(batteryMatch.index - 100, batteryMatch.index).trim().replace(/\n/g, '.').split('.').slice(-1)[0]
       const sr2 = batteryMatch.input.substring(batteryMatch.index, batteryMatch.index + 100).trim().replace(/\n/g, '.').split('.')[0]
-      specifications.batteryRef = sr1 + ' ' + sr2
-      console.log(specifications.batteryRef);
+      specifications.batteryRef = (sr1 + ' ' + sr2).trim()
     }
     if (weightMatch) {
       specifications.weight = weightMatch[1].replace(/,/g, '');
@@ -67,10 +66,14 @@ async function scrapeWebsite(url) {
 }
 
 scrapeWebsite(url).then((data) => {
+  const json = {
+    url,
+    data
+  }
   const timestamp = Date.now();
   const fileName = `out_${timestamp}.json`;
   const filePath = `./results/${fileName}`;
-  fs.writeFile(filePath, JSON.stringify(data, null, 2), (err) => {
+  fs.writeFile(filePath, JSON.stringify(json, null, 2), (err) => {
     if (err) {
       console.error(err);
       return;
