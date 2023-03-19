@@ -25,13 +25,15 @@ async function scrapeWebsite(url) {
     })) : null;
 
     // Extract specifications from the product description
-    const lumensMatch = description.match(/(\d+)\s*lumens?/i);
-    const batteryMatch = description.match(/(\d+)\s*mah/i);
-    const weightMatch = description.match(/(\d+)\s*(g|grams)/i);
+    const lumensMatch = description.match(/([\d,]+)\s*(lumens|lm)/i);
+    const batteryMatch = description.match(/([\d,]+)\s*(mah)/i);
+    const weightMatch = description.match(/([\d,]+)\s*(grams|g)/i);
+    const chargingMatch = /type-c/i.test(description);
     const specifications = {
-      output: lumensMatch ? lumensMatch[1] : null,
-      batteryCapacity: batteryMatch ? batteryMatch[1] : null,
-      weight: weightMatch ? weightMatch[1] : null,
+      output: lumensMatch ? lumensMatch[1] : undefined,
+      charging: chargingMatch ? 'Type-C' : undefined,
+      batteryCapacity: batteryMatch ? batteryMatch[1] : undefined,
+      weight: weightMatch ? weightMatch[1] : undefined,
     };
     console.log(specifications);
     // Close the product page and return the data
